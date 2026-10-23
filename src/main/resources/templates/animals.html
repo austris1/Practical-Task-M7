@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<!--
+  ╔══════════════════════════════════════════════════════════════════╗
+  ║  TASK A — ADD THYMELEAF                                          ║
+  ╠══════════════════════════════════════════════════════════════════╣
+  ║  This is a plain static HTML file — the animal list is           ║
+  ║  hard-coded and the form does not work yet.                      ║
+  ║                                                                  ║
+  ║  Your job:                                                       ║
+  ║  1. Move this file to:                                           ║
+  ║       src/main/resources/templates/animals.html                  ║
+  ║  2. Add the Thymeleaf namespace to <html>:                       ║
+  ║       xmlns:th="http://www.thymeleaf.org"                        ║
+  ║  3. Create AnimalPageController (in controller/)                 ║
+  ║       @GetMapping("/animals")  → pass List<AnimalResponse>       ║
+  ║       @GetMapping("/animals/new") → pass empty AnimalForm        ║
+  ║       @PostMapping("/animals") → call service, redirect          ║
+  ║  4. Replace the hard-coded <li> elements with th:each            ║
+  ║  5. Add th:src / th:alt to the <img> tags                        ║
+  ║     Keep width/height/object-fit as plain HTML attributes        ║
+  ║  6. Update the form action with th:action and bind               ║
+  ║     fields with th:object / th:field                             ║                                                                  ║
+  ╚══════════════════════════════════════════════════════════════════╝
+-->
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shelter Animals</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 860px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        nav {
+            background: #f1f5f9;
+            padding: 0.6rem 1rem;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+        }
+
+        nav a {
+            margin-right: 1rem;
+            text-decoration: none;
+            color: #2563eb;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        h1 {
+            border-bottom: 2px solid #333;
+            padding-bottom: 0.4rem;
+        }
+
+        h2 {
+            margin-top: 2rem;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        li img {
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .info {
+            flex: 1;
+        }
+
+        .status-available {
+            color: green;
+            font-weight: bold;
+        }
+
+        .status-adopted {
+            color: #999;
+            font-weight: bold;
+        }
+
+        form {
+            display: grid;
+            gap: 0.5rem;
+            max-width: 480px;
+            margin-top: 1rem;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input, select, textarea {
+            padding: 0.4rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 0.6rem 1.2rem;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: fit-content;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+    </style>
+</head>
+<body>
+<nav>
+    <a href="/">Home</a>
+    <a href="/animals">All animals</a>
+    <a href="/animals/new">Add animal</a>
+    <a href="/swagger-ui/index.html">API documentation</a>
+</nav>
+<main>
+    <h1>Shelter Animals</h1>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         HARD-CODED LIST — replace with th:each in Task A
+         ═══════════════════════════════════════════════════════════ -->
+    <section aria-label="Animal list">
+        <ul>
+            <li th:each="animal : ${animals}">
+                <img th:src="${animal.imageUrl}" th:alt="${animal.name}" width="300" height="200"
+                     style="object-fit: cover;">
+                <div class="info">
+                    <strong th:text="${animal.name}">Name</strong>
+                    — <span th:text="${animal.type}">Type</span>
+                    | <span th:text="${animal.breed}">Breed</span>
+                    | Age: <span th:text="${animal.age}">0</span>
+                    <p th:text="${animal.description}">Description</p>
+                </div>
+            </li>
+        </ul>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         ADD ANIMAL FORM — update action + bind fields in Task A
+         ═══════════════════════════════════════════════════════════ -->
+    <section aria-label="Add new animal">
+        <h2>Add a new animal</h2>
+        <form th:action="@{/animals}" method="post" th:object="${form}">
+
+            <label for="name">Name</label>
+            <input id="name" th:field="*{name}" type="text" required placeholder="e.g. Milo">
+            <p th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Name error</p>
+
+            <label for="type">Type</label>
+            <select id="type" th:field="*{type}">
+                <option value="">— choose —</option>
+                <option value="CAT">Cat</option>
+                <option value="DOG">Dog</option>
+                <option value="OTHER">Other</option>
+            </select>
+            <p th:if="${#fields.hasErrors('type')}" th:errors="*{type}">Type error</p>
+
+            <label for="breed">Breed</label>
+            <input id="breed" th:field="*{breed}" type="text" placeholder="e.g. Siamese">
+
+            <label for="age">Age (years)</label>
+            <input id="age" th:field="*{age}" type="number" min="0" placeholder="e.g. 3">
+            <p th:if="${#fields.hasErrors('age')}" th:errors="*{age}">Age error</p>
+
+            <label for="description">Description</label>
+            <textarea id="description" th:field="*{description}" rows="3"
+                      placeholder="A short description of the animal's personality"></textarea>
+
+            <label for="imageUrl">Image filename</label>
+            <input id="imageUrl" th:field="*{imageUrl}" type="text"
+                   placeholder="luna.jpg">
+
+            <button type="submit">Add animal</button>
+        </form>
+    </section>
+</main>
+</body>
+</html>
